@@ -1,0 +1,192 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description"              : "An AWS Cost and Usage Report.",
+
+
+    "Parameters"               : {
+        "ReportBucket" : {
+            "Description" : "The bucket where the billing files will be stored.",
+            "Type"        : "String",
+            "MinLength"   : 3,
+            "MaxLength"   : 63,
+            "AllowedPattern" : "^[a-z](?:(?:\\.(?!\\.))|-|[a-zA-Z0-9]){1,61}[a-z]$",
+            "ConstraintDescription" : "Member must satisfy regular expression pattern: ^[a-z](?:(?:\\.(?!\\.))|-|[a-zA-Z0-9]){1,61}[a-z]$"
+        },
+        "Frequency"    : {
+            "Description" : "The frequency the reports are delivered.",
+            "Type"        : "String",
+            "AllowedValues" : [
+                "Hourly",
+                "Daily"
+            ],
+            "Default"       : "Daily"
+        },
+        "ReportName"   : {
+            "Description" : "The name of the report",
+            "Type"        : "String",
+            "MinLength"   : 1,
+            "MaxLength"   : 256
+        },
+        "CostAndUsageReportLambdaArn" : {
+            "Description" : "The ARN of the Lambda function used to create CURs",
+            "Type"        : "String",
+            "AllowedPattern" : "^arn:aws(?:-us-gov|-cn)?:lambda:.*?:[0-9]{12}:function:.*$",
+            "ConstraintDescription" : "Member must satisfy regular expression pattern: ^arn:aws(?:-us-gov|-cn)?:lambda:.*?:[0-9]{12}:function:.*$"
+        },
+        "OrganizationTag"             : {
+            "Description" : "The organization this account is associated with",
+            "Type"        : "String",
+            "AllowedPattern" : "^\\S{2,}$",
+            "ConstraintDescription" : "Member must satisfy regular expression pattern: ^\\S{2,}$",
+            "Default"               : "bamcis.io"
+        },
+        "ApplicationTag"              : {
+            "Description" : "The application this account is associated with",
+            "Type"        : "String",
+            "AllowedPattern" : "^\\S{2,}$",
+            "ConstraintDescription" : "Member must satisfy regular expression pattern: ^\\S{2,}$",
+            "Default"               : "cur"
+        },
+        "EnvironmentTag"              : {
+            "Description" : "The environment this account is associated with",
+            "Type"        : "String",
+            "AllowedPattern" : "^\\S{2,}$",
+            "ConstraintDescription" : "Member must satisfy regular expression pattern: ^\\S{2,}$",
+            "Default"               : "dev"
+        }
+    },
+
+
+    "Conditions"               : {
+    },
+
+
+    "Resources"                : {
+        "BucketPolicy" : {
+            "Type" : "AWS::S3::BucketPolicy",
+            "Properties" : {
+                "Bucket" : {
+                    "Ref" : "ReportDeliveryBucket"
+                },
+                "PolicyDocument" : {
+                    "Version" : "2012-10-17",
+                    "Id"      : "1",
+                    "Statement" : [
+                        {
+                            "Sid" : "1",
+                            "Effect" : "Allow",
+                            "Principal" : {
+                                "AWS" : "arn:aws:iam::386209384616:root"
+                            },
+                            "Action"    : [
+                                "s3:GetBucketAcl",
+                                "s3:GetBucketPolicy"
+                            ],
+                            "Resource"  : {
+                                "Fn::Join" : [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref" : "ReportDeliveryBucket"
+                                        }
+                                    ]
+                                ]
+                            }
+                        },
+                        {
+                            "Sid" : "2",
+                            "Effect" : "Allow",
+                            "Principal" : {
+                                "AWS" : "arn:aws:iam::386209384616:root"
+                            },
+                            "Action"    : "s3:PutObject",
+                            "Resource"  : {
+                                "Fn::Join" : [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref" : "ReportDeliveryBucket"
+                                        },
+                                        "/*"
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "ReportDeliveryBucket" : {
+            "Type" : "AWS::S3::Bucket",
+            "Properties" : {
+                "BucketName" : {
+                    "Ref" : "ReportBucket"
+                },
+                "Tags"       : [
+                    {
+                        "Key" : "Environment",
+                        "Value" : {
+                            "Ref" : "EnvironmentTag"
+                        }
+                    },
+                    {
+                        "Key" : "Application",
+                        "Value" : {
+                            "Ref" : "ApplicationTag"
+                        }
+                    },
+                    {
+                        "Key" : "Organization",
+                        "Value" : {
+                            "Ref" : "OrganizationTag"
+                        }
+                    }
+                ]
+            }
+        },
+        "CostAndUsageReport"   : {
+            "Type" : "Custom::CUR",
+            "Properties" : {
+                "ServiceToken" : {
+                    "Ref" : "CostAndUsageReportLambdaArn"
+                },
+                "ReportDefinition" : {
+                    "ReportName" : {
+                        "Ref" : "ReportName"
+                    },
+                    "Format"      : "TextORcsv",
+					"Compression" : "GZIP",
+                    "S3Bucket"    : {
+                        "Ref" : "ReportDeliveryBucket"
+                    },
+                    "S3Prefix"    : {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                {
+                                    "Ref" : "AWS::AccountId"
+                                },
+                                "/"
+                            ]
+                        ]
+                    },
+                    "S3Region"      : {
+                        "Ref" : "AWS::Region"
+                    },
+                    "TimeUnit"    : {
+                        "Ref" : "Frequency"
+                    }
+                }
+            },
+            "DependsOn"  : [
+                "BucketPolicy"
+            ]
+        }
+    },
+
+
+    "Outputs"                  : {
+    }
+}

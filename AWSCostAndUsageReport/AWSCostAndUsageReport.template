@@ -141,7 +141,8 @@
                         {
                             "Effect" : "Allow",
                             "Action" : [
-                                "cur:PutReportDefinitions",
+                                "cur:PutReportDefinition",
+								"cur:PutReportDefinitions",
                                 "cur:DescribeReportDefinition",
                                 "cur:DeleteReportDefinition"
                             ],
@@ -180,6 +181,7 @@
         "LambdaFunction"      : {
             "Type" : "AWS::Serverless::Function",
             "Properties" : {
+				"Description" : "Creates, updates, and deletes cost and usage report definitions.",
                 "Handler" : "AWSCostAndUsageReport::AWSCostAndUsageReport.Entrypoint::Execute",
                 "FunctionName" : "CostAndUsageReportResource",
                 "Runtime"      : "dotnetcore2.0",

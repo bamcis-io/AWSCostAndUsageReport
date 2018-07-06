@@ -37,6 +37,11 @@ namespace AWSCostAndUsageReport
 
                 try
                 {
+                    //arn:aws:lambda:us-east-1:123456789012:function:FunctionName
+                    string[] Parts = context.InvokedFunctionArn.Split(":");
+                    string Region = Parts[3];
+                    string AccountId = Parts[4];
+
                     AmazonCostAndUsageReportConfig Config = new AmazonCostAndUsageReportConfig();
                     IAmazonCostAndUsageReport Client = new AmazonCostAndUsageReportClient(Config);
 
@@ -54,19 +59,46 @@ namespace AWSCostAndUsageReport
                         Request.ReportDefinition.AdditionalSchemaElements = new List<string>();
                     }
 
+                    // This is required
                     if (!Request.ReportDefinition.AdditionalSchemaElements.Contains("RESOURCES"))
                     {
                         Request.ReportDefinition.AdditionalSchemaElements.Add("RESOURCES");
+                    }
+
+                    // Setup defaults for the definition
+                    if (String.IsNullOrEmpty(Request.ReportDefinition.S3Region))
+                    {
+                        Request.ReportDefinition.S3Region = Region;
+                    }
+
+                    if (Request.ReportDefinition.Compression == null || String.IsNullOrEmpty(Request.ReportDefinition.Compression.Value))
+                    {
+                        Request.ReportDefinition.Compression = CompressionFormat.GZIP;
+                    }
+
+                    if (Request.ReportDefinition.TimeUnit == null || String.IsNullOrEmpty(Request.ReportDefinition.TimeUnit.Value))
+                    {
+                        Request.ReportDefinition.TimeUnit = TimeUnit.DAILY;
+                    }
+
+                    if (Request.ReportDefinition.Format == null || String.IsNullOrEmpty(Request.ReportDefinition.Format.Value))
+                    {
+                        Request.ReportDefinition.Format = ReportFormat.TextORcsv;
                     }
 
                     PutReportDefinitionResponse Response = await Client.PutReportDefinitionAsync(Request);
 
                     if ((int)Response.HttpStatusCode < 200 || (int)Response.HttpStatusCode > 299)
                     {
-                        return new CustomResourceResponse(CustomResourceResponse.RequestStatus.FAILED, $"Received HTTP status code {(int)Response.HttpStatusCode}.", request);
+                        return new CustomResourceResponse(
+                            CustomResourceResponse.RequestStatus.FAILED, 
+                            $"Received HTTP status code {(int)Response.HttpStatusCode}.", 
+                            request
+                        );
                     }
                     else
                     {
+                        
                         return new CustomResourceResponse(
                             CustomResourceResponse.RequestStatus.SUCCESS,
                             $"See the details in CloudWatch Log Stream: {context.LogStreamName}.",
@@ -78,6 +110,7 @@ namespace AWSCostAndUsageReport
                             new Dictionary<string, object>()
                             {
                                 {"Name", Request.ReportDefinition.ReportName },
+                                {"Arn", $"arn:aws:cur:{Region}:{AccountId}:definition/{ReportName}" },
                                 {"Id", Request.ReportDefinition.ReportName }
                             }
                         );
@@ -115,6 +148,11 @@ namespace AWSCostAndUsageReport
             {
                 try
                 {
+                    //arn:aws:lambda:us-east-1:123456789012:function:FunctionName
+                    string[] Parts = context.InvokedFunctionArn.Split(":");
+                    string Region = Parts[3];
+                    string AccountId = Parts[4];
+
                     AmazonCostAndUsageReportConfig Config = new AmazonCostAndUsageReportConfig();
                     IAmazonCostAndUsageReport Client = new AmazonCostAndUsageReportClient(Config);
 
@@ -142,6 +180,7 @@ namespace AWSCostAndUsageReport
                             new Dictionary<string, object>()
                             {
                                 {"Name", request.PhysicalResourceId as string },
+                                {"Arn", $"arn:aws:cur:{Region}:{AccountId}:definition/{request.PhysicalResourceId}" },
                                 {"Id", request.PhysicalResourceId as string }
                             }
                         );
