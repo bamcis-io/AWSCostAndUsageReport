@@ -6,6 +6,7 @@ This provides an AWS Lambda function that can be used as a custom resource in a 
 - [Usage](#usage)
   * [Required Properties](#required-properties)
   * [Default Values](#default-values)
+  * [Fn::GetAtt Support](#fn::getatt-support)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -66,6 +67,10 @@ These properties will default to specified values if not specified in the CloudF
 - Format : Defaults to `TextORcsv`
 - TimeUnit : Defaults to `DAILY`
 - Compression : Defaults to `GZIP`
+
+### Fn::GetAtt Support
+
+The custom resource supports 3 properties, `Id`, `Name`, and `Arn`. The `Id` and `Name` are the report definition's `ReportName`, which is also the resource's `PhysicalResourceId`.
 
 I recommend you stick with GZIP for compression (I found that the ZIP files could not be uncompressed by other AWS Services like AWS Glue).
 
