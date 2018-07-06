@@ -1,7 +1,6 @@
 # BAMCIS AWS Cost and Usage Report Custom Resource
 
-This provides an AWS Lambda function that can be used as a custom resource in a 
-CloudFormation script to create, update, and delete AWS Cost and Usage Reports.
+This provides an AWS Lambda function that can be used as a custom resource in a  CloudFormation script to create, update, and delete AWS Cost and Usage Reports.
 
 ## Table of Contents
 - [Usage](#usage)
@@ -11,10 +10,7 @@ CloudFormation script to create, update, and delete AWS Cost and Usage Reports.
 
 ## Usage
 
-Once you deploy the Lambda function, take note of its Arn. Supply this as the service token for the custom
-resource. The properties of the resource will by the JSON representation of a `PutReportDefinitionRequest` object. It 
-should have a single top level property, `ReportDefinition`, and then several key value pairs under that property. For example,
-your custom resource might look like:
+Once you deploy the Lambda function, take note of its Arn. Supply this as the service token for the custom resource. The properties of the resource will by the JSON representation of a `PutReportDefinitionRequest` object. It should have a single top level property, `ReportDefinition`, and then several key value pairs under that property. For example, your custom resource might look like:
 
     "CostAndUsageReport"   : {
         "Type" : "Custom::CUR",
@@ -55,9 +51,7 @@ your custom resource might look like:
         ]
     }
 
-A few notes, the S3 bucket must have a very specific bucket policy applied to it. Check AWS documentation for the policy, you can also
-see the policy in the unit test CloudFormation template. If you create the S3 bucket and CUR in the same CloudFormation template, ensure
-the CUR resource depends on the bucket policy so that it doesn't fail the permissions check.
+A few notes, the S3 bucket must have a very specific bucket policy applied to it. Check AWS documentation for the policy, you can also see the policy in the unit test CloudFormation template. If you create the S3 bucket and CUR in the same CloudFormation template, ensure the CUR resource depends on the bucket policy so that it doesn't fail the permissions check.
 
 ### Required Properties
 
