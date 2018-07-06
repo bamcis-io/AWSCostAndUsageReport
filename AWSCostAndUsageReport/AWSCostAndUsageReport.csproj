@@ -3,6 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <Copyright>BAMCIS</Copyright>
+    <PackageProjectUrl>https://github.com/bamcis-io/AWSCostAndUsageReport</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/bamcis-io/AWSCostAndUsageReport/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/bamcis-io/AWSCostAndUsageReport</RepositoryUrl>
+    <PackageTags>AWS Lambda CostAndUsageReport</PackageTags>
+    <Authors>Michael Haken</Authors>
+    <Company>bamcis.io</Company>
+    <Description>Creates, updates, and deletes AWS Cost and Usage Reports as custom resources in CloudFormation scripts.</Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
