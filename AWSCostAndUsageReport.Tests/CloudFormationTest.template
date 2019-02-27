@@ -12,16 +12,22 @@
             "AllowedPattern" : "^[a-z](?:(?:\\.(?!\\.))|-|[a-zA-Z0-9]){1,61}[a-z]$",
             "ConstraintDescription" : "Member must satisfy regular expression pattern: ^[a-z](?:(?:\\.(?!\\.))|-|[a-zA-Z0-9]){1,61}[a-z]$"
         },
-        "Frequency"    : {
-            "Description" : "The frequency the reports are delivered.",
+        "TimeUnit"    : {
+            "Description" : "The length of time covered by the report.",
             "Type"        : "String",
             "AllowedValues" : [
                 "Hourly",
                 "Daily"
             ],
-            "Default"       : "Daily"
+            "Default"       : "Hourly"
         },
-        "ReportName"   : {
+        "ReportName1"   : {
+            "Description" : "The name of the report",
+            "Type"        : "String",
+            "MinLength"   : 1,
+            "MaxLength"   : 256
+        },
+		"ReportName2"   : {
             "Description" : "The name of the report",
             "Type"        : "String",
             "MinLength"   : 1,
@@ -146,7 +152,7 @@
                 ]
             }
         },
-        "CostAndUsageReport"   : {
+        "CostAndUsageReport1"   : {
             "Type" : "Custom::CUR",
             "Properties" : {
                 "ServiceToken" : {
@@ -154,29 +160,65 @@
                 },
                 "ReportDefinition" : {
                     "ReportName" : {
-                        "Ref" : "ReportName"
+                        "Ref" : "ReportName1"
                     },
+					"AdditionalSchemaElements" : [
+						"RESOURCES"
+					],
                     "Format"      : "TextORcsv",
 					"Compression" : "GZIP",
+					"RefreshClosedReports" : "true",
+					"ReportVersioning" : "CREATE_NEW_REPORT",
                     "S3Bucket"    : {
                         "Ref" : "ReportDeliveryBucket"
                     },
                     "S3Prefix"    : {
-                        "Fn::Join" : [
-                            "",
-                            [
-                                {
-                                    "Ref" : "AWS::AccountId"
-                                },
-                                "/"
-                            ]
-                        ]
+						"Fn::Sub" : "${AWS::AccountId}_1/"
                     },
                     "S3Region"      : {
                         "Ref" : "AWS::Region"
                     },
                     "TimeUnit"    : {
-                        "Ref" : "Frequency"
+                        "Ref" : "TimeUnit"
+                    }
+                }
+            },
+            "DependsOn"  : [
+                "BucketPolicy"
+            ]
+        },
+
+		"CostAndUsageReport2"   : {
+            "Type" : "Custom::CUR",
+            "Properties" : {
+                "ServiceToken" : {
+                    "Ref" : "CostAndUsageReportLambdaArn"
+                },
+                "ReportDefinition" : {
+                    "ReportName" : {
+                        "Ref" : "ReportName2"
+                    },
+					"AdditionalSchemaElements" : [
+						"RESOURCES"
+					],
+					"AdditionalArtifacts" : [
+						"ATHENA"
+					],
+                    "Format"      : "Parquet",
+					"Compression" : "Parquet",
+					"RefreshClosedReports" : "true",
+					"ReportVersioning" : "OVERWRITE_REPORT",
+                    "S3Bucket"    : {
+                        "Ref" : "ReportDeliveryBucket"
+                    },
+                    "S3Prefix"    : {
+                        "Fn::Sub" : "${AWS::AccountId}_2/"
+                    },
+                    "S3Region"      : {
+                        "Ref" : "AWS::Region"
+                    },
+                    "TimeUnit"    : {
+                        "Ref" : "TimeUnit"
                     }
                 }
             },

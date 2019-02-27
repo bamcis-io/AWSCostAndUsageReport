@@ -29,8 +29,36 @@
             "AllowedPattern" : "^\\S{2,}$",
             "ConstraintDescription" : "Member must satisfy regular expression pattern: ^\\S{2,}$",
             "Default"               : "dev"
-        }
-    },
+        },
+		"DefaultFormat"		 : {
+			"Type" : "String",
+			"Description" : "The default format that the reports will use if not defined in the request.",
+			"AllowedValues" : [
+				"Parquet",
+				"TextOrCsv"
+			],
+			"Default" : "TextOrCsv"
+		},
+		"DefaultCompression"		 : {
+			"Type" : "String",
+			"Description" : "The default compression that the reports will use if not defined in the request.",
+			"AllowedValues" : [
+				"GZIP",
+				"Parquet",
+				"ZIP"
+			],
+			"Default" : "GZIP"
+		},
+		"DefaultTimeUnit"		 : {
+			"Type" : "String",
+			"Description" : "The default time unit used for reports if not defined in the request.",
+			"AllowedValues" : [
+				"HOURLY",
+				"DAILY"
+			],
+			"Default" : "DAILY"
+		}
+    }, 
 
 
     "Conditions"               : {
@@ -44,6 +72,55 @@
         }
     },
 
+	"Rules" : {
+		"ParquetFormat" : {
+			"RuleCondition" : {
+				"Fn::Equals" : [
+					{
+						"Ref" : "DefaultFormat"
+					},
+					"Parquet"
+				]
+			},
+			"Assertions" : [
+				{
+					"Assert" : {
+						"Fn::Equals" : [
+							{
+								"Ref" : "DefaultCompression"
+							},
+							"Parquet"
+						]
+					},
+					"AssertDescription" : "When the default format is specified as Parquet, the default compression must also be Parquet."
+				}
+			]
+		},
+
+		"ParquetCompression" : {
+			"RuleCondition" : {
+				"Fn::Equals" : [
+					{
+						"Ref" : "DefaultCompression"
+					},
+					"Parquet"
+				]
+			},
+			"Assertions" : [
+				{
+					"Assert" : {
+						"Fn::Equals" : [
+							{
+								"Ref" : "DefaultFormat"
+							},
+							"Parquet"
+						]
+					},
+					"AssertDescription" : "When the default compression is specified as Parquet, the default format must also be Parquet."
+				}
+			]
+		}
+	},
 
     "Resources"                : {
         "LambdaExecutionRole" : {
@@ -194,6 +271,19 @@
                         "Arn"
                     ]
                 },
+				"Environment" : {
+					"Variables" : {
+						"DefaultFormat" : {
+							"Ref" : "DefaultFormat"
+						},
+						"DefaultCompression" : {
+							"Ref" : "DefaultCompression"
+						},
+						"DefaultTimeUnit" : {
+							"Ref" : "DefaultTimeUnit"
+						}
+					}
+				},
                 "Tags"         : {
                     "Name" : "CostAndUsageReportResource",
                     "Environment" : {
