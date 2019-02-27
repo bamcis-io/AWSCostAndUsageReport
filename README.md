@@ -8,6 +8,7 @@ CloudFormation script to create, update, and delete AWS Cost and Usage Reports.
   * [Required Properties](#required-properties)
   * [Default Values](#default-values)
   * [Formatting](#formatting)
+  * [Fn::GetAtt Support](#fn::getatt-support)
 - [Revision History](#revision-history)
 
 ## Usage
@@ -57,6 +58,8 @@ Once you deploy the Lambda function, take note of its Arn. Supply this as the se
 
 A few notes, the S3 bucket must have a very specific bucket policy applied to it. Check AWS documentation for the policy, you can also see the policy in the unit test CloudFormation template. If you create the S3 bucket and CUR in the same CloudFormation template, ensure the CUR resource depends on the bucket policy so that it doesn't fail the permissions check.
 
+I recommend you stick with GZIP or Parquet for compression (I found that the ZIP files could not be uncompressed by other AWS Services like AWS Glue). 
+
 ### Required Properties
 
 Required properties in ReportDefinition:
@@ -71,12 +74,13 @@ These properties will default to specified values if not specified in the CloudF
 - TimeUnit : Defaults to `DAILY`
 - Compression : Defaults to `GZIP`
 
-I recommend you stick with GZIP for compression (I found that the ZIP files could not be uncompressed by other AWS Services like AWS Glue). 
-
 ### Formatting
 If you choose `"ATHENA"` as one of the `AdditionalArtifacts` members, this is the only member you can define. You must also set the format and compression values to `parquet`. 
 
 If you choose `"QUICKSIGHT"` and/or `"REDSHIFT"` you must select `TextORcsv` as the format and `GZIP` as the compression.
+
+### Fn:GettAtt Support
+The custom resource supports 3 properties, Id, Name, and Arn. The Id and Name are the report definition's ReportName, which is also the resource's PhysicalResourceId.
 
 ## Revision History
 
