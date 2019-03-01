@@ -261,7 +261,7 @@
 				"Description" : "Creates, updates, and deletes cost and usage report definitions.",
                 "Handler" : "AWSCostAndUsageReport::AWSCostAndUsageReport.Entrypoint::Execute",
                 "FunctionName" : "CostAndUsageReportResource",
-                "Runtime"      : "dotnetcore2.0",
+                "Runtime"      : "dotnetcore2.1",
                 "CodeUri"      : "",
                 "MemorySize"   : 256,
                 "Timeout"      : 30,

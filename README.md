@@ -84,6 +84,9 @@ The custom resource supports 3 properties, Id, Name, and Arn. The Id and Name ar
 
 ## Revision History
 
+### 1.1.1
+Fixed netcore runtime version in CF template.
+
 ### 1.1.0
 Added support for Parquet format/compression. Allowed changing the default values through environment variables.
 
