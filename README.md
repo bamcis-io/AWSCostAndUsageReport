@@ -1,3 +1,5 @@
+This repo has been archived since AWS natively [supports this now in CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-cur-reportdefinition.html).
+
 # BAMCIS AWS Cost and Usage Report Custom Resource
 
 This provides an AWS Lambda function that can be used as a custom resource in a 
